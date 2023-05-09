@@ -19,7 +19,7 @@ namespace UnityStandardAssets._2D
         private Animator m_Anim;            // Reference to the player's animator component.
         private Rigidbody2D m_Rigidbody2D;
         private bool m_FacingRight = true;  // For determining which way the player is currently facing.
-
+        private bool m_JumpReset = false;
         private void Awake()
         {
             // Setting up references.
@@ -40,7 +40,18 @@ namespace UnityStandardAssets._2D
             for (int i = 0; i < colliders.Length; i++)
             {
                 if (colliders[i].gameObject != gameObject)
-                    m_Grounded = true;
+                {
+                    if(colliders[i].gameObject.tag=="JumpPoint")
+                    {
+                        m_JumpReset = true;
+                        Destroy(colliders[i].gameObject);
+                    }
+                    else
+                    {
+                        m_Grounded = true;
+                    }
+                }
+                    
             }
             m_Anim.SetBool("Ground", m_Grounded);
 
@@ -90,11 +101,17 @@ namespace UnityStandardAssets._2D
                 }
             }
             // If the player should jump...
-            if (m_Grounded && jump && m_Anim.GetBool("Ground"))
+            //if (m_Grounded && jump && m_Anim.GetBool("Ground"))
+            if((m_Grounded||m_JumpReset)&&jump)
             {
                 // Add a vertical force to the player.
                 m_Grounded = false;
+                m_JumpReset = false;
                 m_Anim.SetBool("Ground", false);
+                Vector2 resetVelocity = m_Rigidbody2D.velocity;
+                // 这种写法可以保留沿Y轴的正向速度，如果不需要也可以直接改为0
+                resetVelocity.y = Mathf.Max(0,resetVelocity.y);
+                m_Rigidbody2D.velocity = resetVelocity;
                 m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
             }
         }
