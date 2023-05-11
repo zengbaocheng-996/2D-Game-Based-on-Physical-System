@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-
+using UnityEngine.Events;
 namespace UnityStandardAssets._2D
 {
     public class PlatformerCharacter2D : MonoBehaviour
@@ -19,6 +19,8 @@ namespace UnityStandardAssets._2D
         private Animator m_Anim;            // Reference to the player's animator component.
         private Rigidbody2D m_Rigidbody2D;
         private bool m_FacingRight = true;  // For determining which way the player is currently facing.
+        // 添加UnityEvent类型的字段JumpEvent
+        public UnityEvent JumpEvent;
         private bool m_JumpReset = false;
         private void Awake()
         {
@@ -100,8 +102,10 @@ namespace UnityStandardAssets._2D
                     Flip();
                 }
             }
+            // 修改Move函数的跳跃部分
             // If the player should jump...
             //if (m_Grounded && jump && m_Anim.GetBool("Ground"))
+            //if(m_Grounded&&jump)
             if((m_Grounded||m_JumpReset)&&jump)
             {
                 // Add a vertical force to the player.
@@ -113,6 +117,14 @@ namespace UnityStandardAssets._2D
                 resetVelocity.y = Mathf.Max(0,resetVelocity.y);
                 m_Rigidbody2D.velocity = resetVelocity;
                 m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
+
+                // 只要通知所有人跳跃事件发生了即可
+                JumpEvent.Invoke();
+                //// 获取音源组件
+                //AudioSource audio = GetComponent<AudioSource>();
+                //// 动态加载音效资源
+                //audio.clip = Resources.Load<AudioClip>("electronic_01");
+                //audio.Play();
             }
         }
 
